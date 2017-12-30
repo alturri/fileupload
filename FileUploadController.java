@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import upload.services.MetadataService;
 
 import java.io.IOException;
 
@@ -19,24 +20,14 @@ import java.io.IOException;
 @RestController
 public class FileUploadController {
 
-    private final FileService fileService;
+    private FileService fileService;
 
-    private FileMetadataRepository repository;
+    private MetadataService metadataService;
 
     @Autowired
-    public FileUploadController(FileService fileService, FileMetadataRepository repository) {
+    public FileUploadController(FileService fileService, MetadataService metadataService) {
         this.fileService = fileService;
-        this.repository = repository;
-    }
-
-    @RequestMapping(value = "/get", method = RequestMethod.GET)
-    public String getOne() {
-        return fileService.getOne();
-    }
-
-    @RequestMapping(value = "/getAll", method = RequestMethod.GET)
-    public String getAll() {
-        return fileService.getAll();
+        this.metadataService = metadataService;
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
@@ -50,13 +41,23 @@ public class FileUploadController {
 
             int size = Integer.valueOf(sizeString);
 
-            FileMetadataEntity entity =
-                new FileMetadataEntity(absolutePath, author, size);
+            FileMetadataEntity entity = metadataService.saveMetadata(absolutePath, author, size);
 
-            repository.save(entity);
-
-            return new ResponseEntity(
-            "Successfully uploaded ", new HttpHeaders(), HttpStatus.OK);
+            //
+            //  It is not uncommon that one creates another object in the middle and
+            //  exposes that object through the GUI instead:  for example, there may very well
+            //  be an impedance mismatch between what a user sees and how the data is actually
+            //  stored in the database.  I've elected not to go that far in this sample code.
+            //
+            //  Also, suppose that there were more than just three (3) pieces of metadata: for
+            //  example, ten (10) elements.  One would not want the 'saveMetadata' method to
+            //  have all of ten (10) parameters.  At that point, I would have taken another
+            //  approach entirely, whereby I would have two (2) endpoints (one for the file
+            //  and one for the metadata) and have had the user specify the metadata as JSON
+            //  instead, so that then Spring could have read such an object in one fell swoop,
+            //  rather than reading each parameter as a RequestParam.
+            //
+            return new ResponseEntity(entity, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

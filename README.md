@@ -20,4 +20,12 @@ Note:  currently all supported types of metadata are predetermined.
     To see that the application has indeed started, you ought to see a line similar to the following, in the console:
     
     2018-01-03 18:46:25.626  INFO 6903 --- [           main] upload.UploadApplication                 : Started UploadApplication in 73.538 seconds (JVM running for 75.6)
+    
+----------------
 
+Tests
+
+As things stand right now, this repository only contains unit tests:  currently no integration tests have been written.
+
+Also, in order to be able to successfully run UploadTest, one will need to have set the APPL_ROOT or alternatively, to have
+specified such an environment variable in a configuration for Upload Test itself.
